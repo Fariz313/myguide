@@ -38,7 +38,7 @@ public class UserController {
                 .body(response);
     }
 
-    @PostMapping(value = "/ ", produces = "application/json")
+    @PostMapping(value = "/save", produces = "application/json")
     public ResponseEntity<Object> saveUser(@RequestBody User user)
             throws ExecutionException, InterruptedException {
         User saveUser = userService.saveUser(user);
@@ -49,6 +49,30 @@ public class UserController {
         response.setData(saveUser);
         return ResponseEntity
                 .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
+    }
+
+    @PostMapping(value = "/login", produces = "application/json")
+    public ResponseEntity<Object> loginUser(@RequestBody User user)
+            throws ExecutionException, InterruptedException {
+        User loginUser = userService.loginUser(user);
+            int HS = 500;
+        Response response = new Response();
+        if (loginUser != null) {
+            response.setService(this.getClass().getName());
+            response.setMessage("Berhasil Login");
+            response.setData(loginUser);
+            HS=200;
+        } else {
+            response.setService(this.getClass().getName());
+            response.setMessage("Email atau Password Salah");
+            response.setData(loginUser);
+            HS=400;
+        }
+
+        return ResponseEntity
+                .status(HS)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
