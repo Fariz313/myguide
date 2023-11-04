@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class User {
-    private String id, email, password, role,created_at,updated_at;
+public class Role {
+    private String id;
 }
