@@ -43,9 +43,19 @@ public class UserController {
             throws ExecutionException, InterruptedException {
         User saveUser = userService.saveUser(user);
         Response response = new Response();
-        response.setService(this.getClass().getName());
-        response.setMessage("Berhasil Membuat Data");
-        response.setData(saveUser);
+        
+        if(saveUser == null) {
+            response.setMessage("Email telah terdaftar pada aplikasi!");
+            
+            return ResponseEntity 
+                    .status(400)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response);
+        } else {
+            response.setService(this.getClass().getName());
+            response.setMessage("Berhasil Membuat Data");
+            response.setData(saveUser);
+        }
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)

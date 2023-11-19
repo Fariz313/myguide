@@ -63,11 +63,26 @@ public class UserService {
 
     public User saveUser(User user) throws ExecutionException, InterruptedException {
         try {
-            // User saveUser = this.getUser("ea23077a-f596-401a-977f-66ad55305560");
+
             Firestore dbFirestore = FirestoreClient.getFirestore();
-            ApiFuture<DocumentReference> collectionsApiFuture = dbFirestore.collection(applicationConfig.getCollectionName()).add(user);
-            DocumentReference dr = collectionsApiFuture.get();
-            user.setId(dr.getId());
+            CollectionReference users = dbFirestore.collection("users");
+            Query query = users.whereEqualTo("email", user.getEmail());
+            boolean found = false;
+            ApiFuture<QuerySnapshot> querySnapshot = query.get();
+            User userFound = null;
+            for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+                userFound = document.toObject(User.class);
+                found = true;
+            }
+            if (!found) {
+                ApiFuture<DocumentReference> collectionsApiFuture = dbFirestore.collection("users").add(user);
+                DocumentReference dr = collectionsApiFuture.get();
+                user.setId(dr.getId());
+            } else {
+                return null;
+            }
+            
+            
             return user;
         } catch (Exception e) {
             e.printStackTrace();
