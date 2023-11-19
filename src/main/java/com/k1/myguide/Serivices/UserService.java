@@ -51,6 +51,7 @@ public class UserService {
             if (document.exists()) {
                 user = document.toObject(User.class);
                 return user;
+                // return null;
             } else {
                 return null;
             }
@@ -62,11 +63,12 @@ public class UserService {
 
     public User saveUser(User user) throws ExecutionException, InterruptedException {
         try {
-            User saveUser = this.getUser(user.getId());
+            // User saveUser = this.getUser("ea23077a-f596-401a-977f-66ad55305560");
             Firestore dbFirestore = FirestoreClient.getFirestore();
-            ApiFuture<WriteResult> collectionsApiFuture = dbFirestore.collection(applicationConfig.getCollectionName())
-                    .document(user.getId()).set(user);
-            return saveUser;
+            ApiFuture<DocumentReference> collectionsApiFuture = dbFirestore.collection(applicationConfig.getCollectionName()).add(user);
+            DocumentReference dr = collectionsApiFuture.get();
+            user.setId(dr.getId());
+            return user;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

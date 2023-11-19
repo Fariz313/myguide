@@ -42,7 +42,6 @@ public class UserController {
     public ResponseEntity<Object> saveUser(@RequestBody User user)
             throws ExecutionException, InterruptedException {
         User saveUser = userService.saveUser(user);
-
         Response response = new Response();
         response.setService(this.getClass().getName());
         response.setMessage("Berhasil Membuat Data");
