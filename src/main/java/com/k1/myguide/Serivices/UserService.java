@@ -1,6 +1,7 @@
 package com.k1.myguide.Serivices;
 
 import java.io.FileInputStream;
+import java.util.Calendar;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -23,6 +24,7 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import com.k1.myguide.Config.FirebaseConfig;
 import com.k1.myguide.Models.User;
+
 
 import jakarta.annotation.PostConstruct;
 
@@ -75,15 +77,19 @@ public class UserService {
                 found = true;
             }
             if (!found) {
+                UUID uuid = UUID.randomUUID();
+                user.setId(uuid.toString());
+                user.setCreated_at(Calendar.getInstance().getTime().toString());
                 ApiFuture<DocumentReference> collectionsApiFuture = dbFirestore.collection("users").add(user);
-                DocumentReference dr = collectionsApiFuture.get();
-                user.setId(dr.getId());
-            } else {
-                return null;
-            }
+                //DocumentReference dr = collectionsApiFuture.get();
+                return user;
+                
+            } 
+            return null;
             
             
-            return user;
+            
+            //return null;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
