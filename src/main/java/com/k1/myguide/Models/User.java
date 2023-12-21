@@ -1,5 +1,6 @@
 package com.k1.myguide.Models;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,8 @@ public class User {
     if (this.role != null) {
         updateMap.put("role", this.role);
     }
+
+    updateMap.put("updated_at", Calendar.getInstance().getTime().toString());
     
     return updateMap;
 }
