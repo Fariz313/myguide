@@ -5,8 +5,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class Destinasi {
+public class Destination {
     private String id,name,writer_id,created_at,updated_at;
     private double longitude,latitude;
-
 }
