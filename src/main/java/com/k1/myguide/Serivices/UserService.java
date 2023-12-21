@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
@@ -24,7 +25,6 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import com.k1.myguide.Config.FirebaseConfig;
 import com.k1.myguide.Models.User;
-
 
 import jakarta.annotation.PostConstruct;
 
@@ -49,7 +49,7 @@ public class UserService {
             ApiFuture<DocumentSnapshot> future = documentReference.get();
             DocumentSnapshot document = future.get();
             User user;
-    
+
             if (document.exists()) {
                 user = document.toObject(User.class);
                 return user;
@@ -79,17 +79,15 @@ public class UserService {
             if (!found) {
                 UUID uuid = UUID.randomUUID();
                 user.setId(uuid.toString());
-                user.setCreated_at(Calendar.getInstance().getTime().toString());
+                user.setCreated_at(Timestamp.now());
                 ApiFuture<DocumentReference> collectionsApiFuture = dbFirestore.collection("users").add(user);
-                //DocumentReference dr = collectionsApiFuture.get();
+                // DocumentReference dr = collectionsApiFuture.get();
                 return user;
-                
-            } 
+
+            }
             return null;
-            
-            
-            
-            //return null;
+
+            // return null;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -129,27 +127,27 @@ public class UserService {
             userFound = document.toObject(User.class);
             found = true;
         }
-        if(found){
-            if(passwordEncoder.matches(user.getPassword(), userFound.getPassword())){
+        if (found) {
+            if (passwordEncoder.matches(user.getPassword(), userFound.getPassword())) {
                 return userFound;
             }
             return null;
-        }else{
+        } else {
             return null;
         }
     }
 
     @PostConstruct
     public void initialize() {
-    try {
-        FileInputStream serviceAccount = new FileInputStream(applicationConfig.getAuthFileLocation());
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setDatabaseUrl(applicationConfig.getDbBaseUrl())
-                .build();
-        FirebaseApp myApp = FirebaseApp.initializeApp(options);
-    } catch (Exception e) {
-        e.printStackTrace();
+        try {
+            FileInputStream serviceAccount = new FileInputStream(applicationConfig.getAuthFileLocation());
+            FirebaseOptions options = new FirebaseOptions.Builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .setDatabaseUrl(applicationConfig.getDbBaseUrl())
+                    .build();
+            FirebaseApp myApp = FirebaseApp.initializeApp(options);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-}
 }

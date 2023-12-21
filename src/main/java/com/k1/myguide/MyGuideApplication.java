@@ -13,6 +13,7 @@ public class MyGuideApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(MyGuideApplication.class, args);
+
 	}
 
 }

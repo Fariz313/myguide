@@ -1,10 +1,13 @@
 package com.k1.myguide.Controllers;
 
 import org.springframework.http.ResponseEntity;
+
+import com.google.cloud.firestore.WriteResult;
 import com.k1.myguide.Models.Destination;
 import com.k1.myguide.Serivices.DestinationService;
 import com.k1.myguide.Utils.Response;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.http.HttpStatus;
@@ -22,20 +25,50 @@ public class DestinationController {
     }
 
     @GetMapping(value = "/", produces = "application/json")
-    public ResponseEntity<Object> getDestination(@RequestParam("empId") String empId)
+    public ResponseEntity<Object> getDestination()
             throws ExecutionException, InterruptedException {
         Response response = new Response();
         response.setService(this.getClass().getName());
-        response.setMessage("Berhasil Membuat Data");
-        Destination Destination = DestinationService.getDestination("empId");
-        response.setData(Destination);
-        // if (!StringUtils.isEmpty(Destination)) {
-        // return ResponseHandler.response(Destination, "Current Destination", true, HttpStatus.OK);
-        // }
+        response.setMessage("Berhasil Mendapat Data");
+        List<Destination> destinations = DestinationService.getDestinationAll();
+        response.setData(destinations);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
+    }
+
+    @GetMapping(value = "/{id}", produces = "application/json")
+    public ResponseEntity<Object> getDestinationById(@PathVariable String id)
+            throws ExecutionException, InterruptedException {
+        try {
+            Response response = new Response();
+            response.setService(this.getClass().getName());
+
+            // Retrieve the destination by ID
+            Destination destination = DestinationService.getDestination(id);
+
+            if (destination != null) {
+                response.setMessage("Berhasil Mendapat Data");
+                response.setData(destination);
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(response);
+            } else {
+                response.setMessage("Data tidak ditemukan");
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(response);
+            }
+        } catch (Exception e) {
+            // Log the exception or handle it appropriately
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal Server Error");
+        }
     }
 
     @PostMapping(value = "/save", produces = "application/json")
@@ -43,11 +76,11 @@ public class DestinationController {
             throws ExecutionException, InterruptedException {
         Destination saveDestination = DestinationService.saveDestination(Destination);
         Response response = new Response();
-        
-        if(saveDestination == null) {
+
+        if (saveDestination == null) {
             response.setMessage("Destinasi gagal di daftarakan!");
-            
-            return ResponseEntity 
+
+            return ResponseEntity
                     .status(400)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(response);
@@ -56,6 +89,44 @@ public class DestinationController {
             response.setMessage("Berhasil Membuat Destinasi");
             response.setData(saveDestination);
         }
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
+    }
+
+    @PostMapping(value = "/update/{id}", produces = "application/json")
+    public ResponseEntity<Object> updateDestination(@RequestBody Destination Destination, @PathVariable String id)
+            throws ExecutionException, InterruptedException {
+
+        Response response = new Response();
+        response.setService(this.getClass().getName());
+        WriteResult wr = DestinationService.updateDestination(id, Destination);
+        response.setMessage("Berhasil mengupdate Data");
+        response.setData(wr);
+        // if (!StringUtils.isEmpty(destination)) {
+        // return ResponseHandler.response(destination, "Current destination", true,
+        // HttpStatus.OK);
+        // }
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
+    }
+
+    @DeleteMapping(value = "/delete/{id}", produces = "application/json")
+    public ResponseEntity<Object> deleteDestination(@PathVariable String id)
+            throws ExecutionException, InterruptedException {
+
+        Response response = new Response();
+        response.setService(this.getClass().getName());
+        DestinationService.deleteDestination(id);
+        response.setMessage("Berhasil menhapus Data");
+        response.setData(null);
+        // if (!StringUtils.isEmpty(destination)) {
+        // return ResponseHandler.response(destination, "Current destination", true,
+        // HttpStatus.OK);
+        // }
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
