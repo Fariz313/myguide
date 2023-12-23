@@ -3,6 +3,8 @@ package com.k1.myguide.Serivices;
 import java.io.FileInputStream;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -26,11 +28,13 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.SetOptions;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import com.k1.myguide.Config.FirebaseConfig;
+import com.k1.myguide.Models.Destination;
 import com.k1.myguide.Models.User;
 
 import jakarta.annotation.PostConstruct;
@@ -115,19 +119,37 @@ public class UserService {
         }
     }
 
-    public User updateUser(User user) throws ExecutionException, InterruptedException {
+    public WriteResult updateUser(String id, User user)
+            throws ExecutionException, InterruptedException {
         try {
             Firestore dbFirestore = FirestoreClient.getFirestore();
-            ApiFuture<WriteResult> writeResult = dbFirestore.collection(applicationConfig.getCollectionName())
-                    .document(user.getId()).update(user.getUpdateMap());
-            return user;
+
+            Map<String, Object> updates = new HashMap<>();
+            if (user.getEmail() != null) {
+                updates.put("email", user.getEmail());
+            }
+            if (user.getPassword() != null) {
+                updates.put("password", passwordEncoder.encode(user.getPassword())); // Replace with the new longitude
+            }
+            if (user.getRole() != null) {
+                updates.put("role", user.getRole()); // Replace with the new latitude
+            }
+            updates.put("updated_at", Timestamp.now());
+            DocumentReference documentReference = dbFirestore.collection(collection).document(id);
+
+            // Update the document with the specified fields
+            ApiFuture<WriteResult> updateResult = documentReference.set(updates, SetOptions.merge());
+
+            // Wait for the update operation to complete
+            WriteResult writeResult = updateResult.get();
+            return writeResult;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
 
-    public String loginUser(User user) throws ExecutionException, InterruptedException {
+    public User loginUser(User user) throws ExecutionException, InterruptedException {
         Firestore dbFirestore = FirestoreClient.getFirestore();
         CollectionReference users = dbFirestore.collection("users");
         Query query = users.whereEqualTo("email", user.getEmail());
@@ -136,7 +158,10 @@ public class UserService {
         User userFound = null;
         for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
             userFound = document.toObject(User.class);
-            found = true;
+            if (userFound != null) {
+                found = true;
+                break;
+            }
         }
         if (found) {
             if (passwordEncoder.matches(user.getPassword(), userFound.getPassword())) {
@@ -150,7 +175,8 @@ public class UserService {
                                 .toString())
                         .withNotBefore(new Date(System.currentTimeMillis() + 1000L))
                         .sign(algorithm);
-                return jwtToken;
+                userFound.set_token(jwtToken);
+                return userFound;
             }
             return null;
         } else {
@@ -206,4 +232,12 @@ public class UserService {
             e.printStackTrace();
         }
     }
+}
+
+/**
+ * UserToken
+ */
+class UserToken {
+    User user;
+    String token;
 }
