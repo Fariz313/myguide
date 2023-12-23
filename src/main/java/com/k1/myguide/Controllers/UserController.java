@@ -43,11 +43,11 @@ public class UserController {
             throws ExecutionException, InterruptedException {
         User saveUser = userService.saveUser(user);
         Response response = new Response();
-        
-        if(saveUser == null) {
+
+        if (saveUser == null) {
             response.setMessage("Email telah terdaftar pada aplikasi!");
-            
-            return ResponseEntity 
+
+            return ResponseEntity
                     .status(400)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(response);
@@ -65,19 +65,43 @@ public class UserController {
     @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<Object> loginUser(@RequestBody User user)
             throws ExecutionException, InterruptedException {
-        User loginUser = userService.loginUser(user);
-            int HS = 500;
+        String loginUser = userService.loginUser(user);
+        int HS = 500;
         Response response = new Response();
         if (loginUser != null) {
             response.setService(this.getClass().getName());
             response.setMessage("Berhasil Login");
             response.setData(loginUser);
-            HS=200;
+            HS = 200;
         } else {
             response.setService(this.getClass().getName());
             response.setMessage("Email atau Password Salah");
             response.setData(loginUser);
-            HS=400;
+            HS = 400;
+        }
+
+        return ResponseEntity
+                .status(HS)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
+    }
+
+    @GetMapping(value = "/me", produces = "application/json")
+    public ResponseEntity<Object> me(@RequestHeader("Authorization") String authorizationHeader)
+            throws ExecutionException, InterruptedException {
+        User loginUser = userService.me(authorizationHeader);
+        int HS = 500;
+        Response response = new Response();
+        if (loginUser != null) {
+            response.setService(this.getClass().getName());
+            response.setMessage("Berhasil Login");
+            response.setData(loginUser);
+            HS = 200;
+        } else {
+            response.setService(this.getClass().getName());
+            response.setMessage("Data User Tidak Ditemukan");
+            response.setData(loginUser);
+            HS = 400;
         }
 
         return ResponseEntity

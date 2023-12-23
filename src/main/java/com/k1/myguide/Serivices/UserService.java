@@ -2,14 +2,21 @@ package com.k1.myguide.Serivices;
 
 import java.io.FileInputStream;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.Timestamp;
@@ -36,6 +43,7 @@ public class UserService {
 
     private FirebaseConfig applicationConfig;
     private String collection = "users";
+    private Algorithm algorithm = Algorithm.HMAC256("rahasia");
 
     public UserService(FirebaseConfig applicationConfig) {
         this.applicationConfig = applicationConfig;
@@ -80,7 +88,10 @@ public class UserService {
                 UUID uuid = UUID.randomUUID();
                 user.setId(uuid.toString());
                 user.setCreated_at(Timestamp.now());
-                ApiFuture<DocumentReference> collectionsApiFuture = dbFirestore.collection("users").add(user);
+                PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
+                DocumentReference documentReference = dbFirestore.collection(collection).document(uuid.toString());
+                documentReference.set(user);
                 // DocumentReference dr = collectionsApiFuture.get();
                 return user;
 
@@ -116,7 +127,7 @@ public class UserService {
         }
     }
 
-    public User loginUser(User user) throws ExecutionException, InterruptedException {
+    public String loginUser(User user) throws ExecutionException, InterruptedException {
         Firestore dbFirestore = FirestoreClient.getFirestore();
         CollectionReference users = dbFirestore.collection("users");
         Query query = users.whereEqualTo("email", user.getEmail());
@@ -129,11 +140,56 @@ public class UserService {
         }
         if (found) {
             if (passwordEncoder.matches(user.getPassword(), userFound.getPassword())) {
-                return userFound;
+                String jwtToken = JWT.create()
+                        .withIssuer("rahasia")
+                        .withSubject("Rahasia Details")
+                        .withClaim("userId", userFound.getId())
+                        .withIssuedAt(new Date())
+                        .withExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000L))
+                        .withJWTId(UUID.randomUUID()
+                                .toString())
+                        .withNotBefore(new Date(System.currentTimeMillis() + 1000L))
+                        .sign(algorithm);
+                return jwtToken;
             }
             return null;
         } else {
             return null;
+        }
+    }
+
+    public User me(String authorizationToken) throws ExecutionException, InterruptedException {
+        try {
+            if (authorizationToken != null && authorizationToken.startsWith("Bearer ")) {
+                JWTVerifier verifier = JWT.require(algorithm)
+                        .withIssuer("rahasia")
+                        .build();
+                String bearerToken = authorizationToken.substring(7);
+                DecodedJWT decodedJWT = verifier.verify(bearerToken);
+                Claim claim = decodedJWT.getClaim("userId");
+                String userId = claim.asString();
+                Firestore dbFirestore = FirestoreClient.getFirestore();
+                DocumentReference documentReference = dbFirestore.collection(collection)
+                        .document(userId);
+                ApiFuture<DocumentSnapshot> future = documentReference.get();
+                DocumentSnapshot document = future.get();
+                User user;
+
+                if (document.exists()) {
+                    user = document.toObject(User.class);
+                    return user;
+                    // return null;
+                } else {
+                    return null;
+                }
+
+            } else {
+                return null;
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
     }
 
