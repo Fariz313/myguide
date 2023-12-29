@@ -91,6 +91,8 @@ public class UserService {
             if (!found) {
                 UUID uuid = UUID.randomUUID();
                 user.setId(uuid.toString());
+                user.setName(user.getName());
+                user.setAddress(user.getAddress());
                 user.setCreated_at(Timestamp.now());
                 PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
                 user.setPassword(passwordEncoder.encode(user.getPassword()));

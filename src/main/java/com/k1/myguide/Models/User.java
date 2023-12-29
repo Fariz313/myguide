@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class User {
-    private String id, email, password, role, _token;
+    private String id, email, name, address, password, role, _token;
     private Timestamp created_at, updated_at;
 
     // public Map<String, Object> getUpdateMap() {
