@@ -136,6 +136,12 @@ public class UserService {
             if (user.getRole() != null) {
                 updates.put("role", user.getRole()); // Replace with the new latitude
             }
+            if (user.getAddress() != null) {
+                updates.put("address", user.getAddress());
+            }
+            if (user.getPathFoto() != null) {
+                updates.put("pathFoto", user.getPathFoto());
+            }
             updates.put("updated_at", Timestamp.now());
             DocumentReference documentReference = dbFirestore.collection(collection).document(id);
 
