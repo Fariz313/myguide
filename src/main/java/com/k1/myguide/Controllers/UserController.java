@@ -16,6 +16,8 @@ import java.util.concurrent.ExecutionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @RequestMapping(value = "user")
@@ -43,6 +45,21 @@ public class UserController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
+
+    @GetMapping(value = "/OAuthGithub", produces = "application/json")
+    public RedirectView getUserOAuth(@RequestParam("code") String oAuthGithub)
+            throws ExecutionException, InterruptedException {
+        Response response = new Response();
+        response.setService(this.getClass().getName());
+        response.setMessage("Berhasil Membuat Data");
+        User user = userService.getUserOAuthGithub(oAuthGithub);
+        response.setData(user);
+        // if (!StringUtils.isEmpty(user)) {
+        // return ResponseHandler.response(user, "Current User", true, HttpStatus.OK);
+        // }
+        return new RedirectView("http://localhost:3000/oauth/login?"+user.toQueryString());
+    }
+
 
     @PostMapping(value = "/update/{id}", produces = "application/json")
     public ResponseEntity<Object> updateUser(@RequestBody User user, @PathVariable String id)

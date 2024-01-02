@@ -1,24 +1,34 @@
 package com.k1.myguide.Serivices;
 
 import java.io.FileInputStream;
+import java.net.URI;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.Timestamp;
@@ -44,10 +54,18 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     private FirebaseConfig applicationConfig;
     private String collection = "users";
     private Algorithm algorithm = Algorithm.HMAC256("rahasia");
+
+    @Value("${spring.security.oauth2.client.registration.github.clientId}")
+    private String GHClientId;
+    @Value("${spring.security.oauth2.client.registration.github.clientSecret}")
+    private String GHClientSecret;
+    @Value("${oauth.gh.token}")
+    private String GHTokenLink;
+    @Value("${oauth.gh.user}")
+    private String GHUserLink;
 
     public UserService(FirebaseConfig applicationConfig) {
         this.applicationConfig = applicationConfig;
@@ -69,6 +87,71 @@ public class UserService {
             } else {
                 return null;
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public User getUserOAuthGithub(String oAuthGithub) throws ExecutionException, InterruptedException {
+        User user = new User();
+        try {
+            System.out.println("MAHOK-1");
+            RestTemplate rt = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(GHTokenLink)
+                    .queryParam("client_id", GHClientId)
+                    .queryParam("client_secret", GHClientSecret)
+                    .queryParam("code", oAuthGithub)
+                    .queryParam("scope", "user:email")
+                    .queryParam("redirect_uri", "http://localhost:9090/user/OAuthGithub");
+            RequestEntity<Void> requestEntity = RequestEntity
+                    .post(URI.create(builder.toUriString()))
+                    .headers(headers)
+                    .build();
+            ResponseEntity<String> responseEntity = rt.exchange(requestEntity, String.class);
+            String responseBody = responseEntity.getBody();
+            System.out.println(URI.create(builder.toUriString()));
+
+            try {
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode jsonNode = objectMapper.readTree(responseBody);
+                String accessToken = jsonNode.get("access_token").asText();
+                System.out.println("MAHOK1");
+                System.out.println(accessToken);
+
+                rt = new RestTemplate();
+                headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+                headers.setBearerAuth(accessToken);
+                builder = UriComponentsBuilder.fromUriString(GHUserLink);
+                requestEntity = RequestEntity
+                        .post(URI.create(builder.toUriString()))
+                        .headers(headers)
+                        .build();
+                responseEntity = rt.exchange(requestEntity, String.class);
+                responseBody = responseEntity.getBody();
+                System.out.println("MAHOK2");
+                try {
+                    objectMapper = new ObjectMapper();
+                    jsonNode = objectMapper.readTree(responseBody);
+                    user.setName(jsonNode.get("name").asText());
+                    user.setIdGithub(jsonNode.get("id").asText());
+                    user.setEmail(jsonNode.get("email").asText());
+                    user = this.saveOrLoginUserOauth(user.getIdGithub(), "idGithub", user);
+                    return user;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -105,6 +188,58 @@ public class UserService {
             return null;
 
             // return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public User saveOrLoginUserOauth(String id, String fieldName, User user)
+            throws ExecutionException, InterruptedException {
+        try {
+
+            Firestore dbFirestore = FirestoreClient.getFirestore();
+            CollectionReference users = dbFirestore.collection("users");
+            Query query = users.whereEqualTo(fieldName, id);
+            boolean found = false;
+            ApiFuture<QuerySnapshot> querySnapshot = query.get();
+            User userFound = null;
+            for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+                userFound = document.toObject(User.class);
+                found = true;
+            }
+            if (!found) {
+                UUID uuid = UUID.randomUUID();
+                user.setId(uuid.toString());
+                user.setName(user.getName());
+                user.setCreated_at(Timestamp.now());
+                DocumentReference documentReference = dbFirestore.collection(collection).document(uuid.toString());
+                documentReference.set(user);
+                String jwtToken = JWT.create()
+                        .withIssuer("rahasia")
+                        .withSubject("Rahasia Details")
+                        .withClaim("userId", user.getId())
+                        .withIssuedAt(new Date())
+                        .withExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000L))
+                        .withJWTId(UUID.randomUUID()
+                                .toString())
+                        .withNotBefore(new Date(System.currentTimeMillis() + 1000L))
+                        .sign(algorithm);
+                user.set_token(jwtToken);
+                return user;
+            }
+            String jwtToken = JWT.create()
+                    .withIssuer("rahasia")
+                    .withSubject("Rahasia Details")
+                    .withClaim("userId", userFound.getId())
+                    .withIssuedAt(new Date())
+                    .withExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000L))
+                    .withJWTId(UUID.randomUUID()
+                            .toString())
+                    .withNotBefore(new Date(System.currentTimeMillis() + 1000L))
+                    .sign(algorithm);
+            userFound.set_token(jwtToken);
+            return userFound;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

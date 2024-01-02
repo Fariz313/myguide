@@ -1,5 +1,8 @@
 package com.k1.myguide.Models;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,9 +15,9 @@ import lombok.Setter;
 @Setter
 @Getter
 public class User {
-    private String id, email, name, address, password, role, _token, pathFoto;
+    private String id, email, name, address, password, role, _token, pathFoto,idGithub;
     private Timestamp created_at, updated_at;
-
+    private boolean justCreated;
     // public Map<String, Object> getUpdateMap() {
     // Map<String, Object> updateMap = new HashMap<>();
     // if (this.email != null) {
@@ -31,4 +34,45 @@ public class User {
 
     // return updateMap;
     // }
+    public String toQueryString() {
+        StringBuilder queryString = new StringBuilder();
+
+        appendQueryParam(queryString, "id", id);
+        appendQueryParam(queryString, "email", email);
+        appendQueryParam(queryString, "name", name);
+        appendQueryParam(queryString, "address", address);
+        appendQueryParam(queryString, "password", password);
+        appendQueryParam(queryString, "role", role);
+        appendQueryParam(queryString, "_token", _token);
+        appendQueryParam(queryString, "pathFoto", pathFoto);
+        appendQueryParam(queryString, "idGithub", idGithub);
+
+        return queryString.toString();
+    }
+
+    private void appendQueryParam(StringBuilder queryString, String key, String value) {
+        if (value != null && !value.isEmpty()) {
+            if (queryString.length() > 0) {
+                queryString.append("&");
+            }
+            try {
+                queryString.append(key)
+                        .append("=")
+                        .append(URLEncoder.encode(value, "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace(); // Handle encoding exception
+            }
+        }
+    }
+
+    private void appendQueryParam(StringBuilder queryString, String key, Timestamp value) {
+        if (value != null) {
+            appendQueryParam(queryString, key, formatTimestamp(value));
+        }
+    }
+
+    private String formatTimestamp(Timestamp timestamp) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dateFormat.format(timestamp);
+    }
 }
