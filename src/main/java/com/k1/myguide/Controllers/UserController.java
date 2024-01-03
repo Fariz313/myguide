@@ -60,27 +60,24 @@ public class UserController {
         return new RedirectView("http://localhost:3000/oauth/login?" + user.toQueryString());
     }
 
-    // @GetMapping(value = "/OAuthGoogle", produces = "application/json")
-    // public RedirectView getUserOAuthGoogle(
-    //         @RequestParam String email,
-    //         @RequestParam boolean email_verified,
-    //         @RequestParam(required = false) String hd,
-    //         @RequestParam String family_name,
-    //         @RequestParam String given_name,
-    //         @RequestParam String name,
-    //         @RequestParam String picture,
-    //         @RequestParam String id)
-    //         throws ExecutionException, InterruptedException {
-    //     Response response = new Response();
-    //     response.setService(this.getClass().getName());
-    //     response.setMessage("Berhasil Membuat Data");
-    //     User user = userService.getUserOAuthGoogle(email,name,id);
-    //     response.setData(user);
-    //     // if (!StringUtils.isEmpty(user)) {
-    //     // return ResponseHandler.response(user, "Current User", true, HttpStatus.OK);
-    //     // }
-    //     return new RedirectView("http://localhost:3000/oauth/login?" + user.toQueryString());
-    // }
+    @GetMapping(value = "/OAuthGoogle", produces = "application/json")
+    public RedirectView getUserOAuthGoogle(
+            @RequestParam String email,
+            @RequestParam boolean email_verified,
+            @RequestParam(required = false) String hd,
+            @RequestParam String family_name,
+            @RequestParam String given_name,
+            @RequestParam String name,
+            @RequestParam String picture,
+            @RequestParam String id)
+            throws ExecutionException, InterruptedException {
+        Response response = new Response();
+        response.setService(this.getClass().getName());
+        response.setMessage("Berhasil Membuat Data");
+        User user = userService.getUserOAuthGoogle(email,name,id,picture);
+        response.setData(user);
+        return new RedirectView("http://localhost:3000/oauth/login?" + user.toQueryString());
+    }
 
     @PostMapping(value = "/update/{id}", produces = "application/json")
     public ResponseEntity<Object> updateUser(@RequestBody User user, @PathVariable String id)

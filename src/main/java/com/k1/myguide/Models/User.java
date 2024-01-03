@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class User {
-    private String id, email, name, address, password, role, _token, pathFoto,idGithub;
+    private String id, email, name, address, password, role, _token, pathFoto,idGithub,idGoogle;
     private Timestamp created_at, updated_at;
     private boolean justCreated;
     // public Map<String, Object> getUpdateMap() {
