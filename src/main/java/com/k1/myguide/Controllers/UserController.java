@@ -74,18 +74,18 @@ public class UserController {
         Response response = new Response();
         response.setService(this.getClass().getName());
         response.setMessage("Berhasil Membuat Data");
-        User user = userService.getUserOAuthGoogle(email,name,id,picture);
+        User user = userService.getUserOAuthGoogle(email, name, id, picture);
         response.setData(user);
         return new RedirectView("http://localhost:3000/oauth/login?" + user.toQueryString());
     }
 
-    @PostMapping(value = "/update/{id}", produces = "application/json")
-    public ResponseEntity<Object> updateUser(@RequestBody User user, @PathVariable String id)
+    @PostMapping(value = "/update", produces = "application/json")
+    public ResponseEntity<Object> updateUser(@RequestBody User user)
             throws ExecutionException, InterruptedException {
 
         Response response = new Response();
         response.setService(this.getClass().getName());
-        WriteResult wr = userService.updateUser(id, user);
+        WriteResult wr = userService.updateUser(user.getId(), user);
         response.setMessage("Berhasil mengupdate Data");
         response.setData(wr);
         // if (!StringUtils.isEmpty(destination)) {
