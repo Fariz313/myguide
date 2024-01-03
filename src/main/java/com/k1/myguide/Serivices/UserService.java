@@ -92,6 +92,71 @@ public class UserService {
             throw e;
         }
     }
+    
+    // public User getUserOAuthGoogle(String oAuthGithub) throws ExecutionException, InterruptedException {
+    //     User user = new User();
+    //     try {
+    //         System.out.println("MAHOK-1");
+    //         RestTemplate rt = new RestTemplate();
+    //         HttpHeaders headers = new HttpHeaders();
+    //         headers.setContentType(MediaType.APPLICATION_JSON);
+    //         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+    //         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(GHTokenLink)
+    //                 .queryParam("client_id", GHClientId)
+    //                 .queryParam("client_secret", GHClientSecret)
+    //                 .queryParam("code", oAuthGithub)
+    //                 .queryParam("scope", "user:email")
+    //                 .queryParam("redirect_uri", "http://localhost:9090/user/OAuthGithub");
+    //         RequestEntity<Void> requestEntity = RequestEntity
+    //                 .post(URI.create(builder.toUriString()))
+    //                 .headers(headers)
+    //                 .build();
+    //         ResponseEntity<String> responseEntity = rt.exchange(requestEntity, String.class);
+    //         String responseBody = responseEntity.getBody();
+    //         System.out.println(URI.create(builder.toUriString()));
+
+    //         try {
+
+    //             ObjectMapper objectMapper = new ObjectMapper();
+    //             JsonNode jsonNode = objectMapper.readTree(responseBody);
+    //             String accessToken = jsonNode.get("access_token").asText();
+    //             System.out.println("MAHOK1");
+    //             System.out.println(accessToken);
+
+    //             rt = new RestTemplate();
+    //             headers = new HttpHeaders();
+    //             headers.setContentType(MediaType.APPLICATION_JSON);
+    //             headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+    //             headers.setBearerAuth(accessToken);
+    //             builder = UriComponentsBuilder.fromUriString(GHUserLink);
+    //             requestEntity = RequestEntity
+    //                     .post(URI.create(builder.toUriString()))
+    //                     .headers(headers)
+    //                     .build();
+    //             responseEntity = rt.exchange(requestEntity, String.class);
+    //             responseBody = responseEntity.getBody();
+    //             System.out.println("MAHOK2");
+    //             try {
+    //                 objectMapper = new ObjectMapper();
+    //                 jsonNode = objectMapper.readTree(responseBody);
+    //                 user.setName(jsonNode.get("name").asText());
+    //                 user.setIdGithub(jsonNode.get("id").asText());
+    //                 user.setEmail(jsonNode.get("email").asText());
+    //                 user = this.saveOrLoginUserOauth(user.getIdGithub(), "idGithub", user);
+    //                 return user;
+    //             } catch (Exception e) {
+    //                 e.printStackTrace();
+    //             }
+
+    //         } catch (Exception e) {
+    //             e.printStackTrace();
+    //         }
+    //         return null;
+    //     } catch (Exception e) {
+    //         e.printStackTrace();
+    //         throw e;
+    //     }
+    // }
 
     public User getUserOAuthGithub(String oAuthGithub) throws ExecutionException, InterruptedException {
         User user = new User();
