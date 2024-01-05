@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class Destination {
-    private String id, name, writer_id;
+    private String id, name, writer_id, rate, rangeHarga, alamat, pathFoto;
     private Timestamp created_at, updated_at;
     private double longitude, latitude;
 }

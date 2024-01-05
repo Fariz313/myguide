@@ -18,6 +18,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.web.servlet.view.RedirectView;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "user")
@@ -27,6 +29,22 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping(value = "/getAllByRole", produces = "application/json")
+    public ResponseEntity<Object> getAllUsersByRole(@RequestParam("role") String role)
+            throws ExecutionException, InterruptedException {
+        Response response = new Response();
+        response.setService(this.getClass().getName());
+
+        List<User> users = userService.getAllUsersByRole(role);
+
+        response.setData(users);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
     }
 
     @GetMapping(value = "/", produces = "application/json")

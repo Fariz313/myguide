@@ -2,6 +2,7 @@ package com.k1.myguide.Serivices;
 
 import java.io.FileInputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -176,6 +177,28 @@ public class UserService {
         }
     }
 
+    public List<User> getAllUsersByRole(String role) throws ExecutionException, InterruptedException {
+    try {
+        Firestore dbFirestore = FirestoreClient.getFirestore();
+        CollectionReference users = dbFirestore.collection("users");
+        Query query = users.whereEqualTo("role", role);
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+        
+        List<User> userList = new ArrayList<>();
+        
+        for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+            User user = document.toObject(User.class);
+            userList.add(user);
+        }
+        
+        return userList;
+    } catch (Exception e) {
+        e.printStackTrace();
+        throw e;
+    }
+}
+
+
     public User saveUser(User user) throws ExecutionException, InterruptedException {
         try {
 
@@ -193,6 +216,7 @@ public class UserService {
                 UUID uuid = UUID.randomUUID();
                 user.setId(uuid.toString());
                 user.setName(user.getName());
+                user.setRole(user.getRole());
                 user.setAddress(user.getAddress());
                 user.setCreated_at(Timestamp.now());
                 PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
