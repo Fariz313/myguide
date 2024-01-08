@@ -44,10 +44,7 @@ public class DestinationController {
         try {
             Response response = new Response();
             response.setService(DestinationService.getClass().getName());
-
-            // Retrieve the destination by ID
             Destination destination = DestinationService.getDestination(id);
-
             if (destination != null) {
                 response.setMessage("Berhasil Mendapat Data");
                 response.setData(destination);

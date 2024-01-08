@@ -56,8 +56,8 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     private FirebaseConfig applicationConfig;
-    private String collection = "users";
-    private Algorithm algorithm = Algorithm.HMAC256("rahasia");
+    private static String collection = "users";
+    private static Algorithm algorithm = Algorithm.HMAC256("rahasia");
 
     @Value("${spring.security.oauth2.client.registration.github.clientId}")
     private String GHClientId;
@@ -408,7 +408,7 @@ public class UserService {
         }
     }
 
-    public User me(String authorizationToken) throws ExecutionException, InterruptedException {
+    public static User me(String authorizationToken) throws ExecutionException, InterruptedException {
         try {
             if (authorizationToken != null && authorizationToken.startsWith("Bearer ")) {
                 JWTVerifier verifier = JWT.require(algorithm)
