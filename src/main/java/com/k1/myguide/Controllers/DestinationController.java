@@ -27,8 +27,8 @@ public class DestinationController {
     @GetMapping(value = "/", produces = "application/json")
     public ResponseEntity<Object> getDestination()
             throws ExecutionException, InterruptedException {
-        Response response = new Response();
-        response.setService(this.getClass().getName());
+        Response response = new Response(); 
+        response.setService(DestinationService.getClass().getName());
         response.setMessage("Berhasil Mendapat Data");
         List<Destination> destinations = DestinationService.getDestinationAll();
         response.setData(destinations);
@@ -43,7 +43,7 @@ public class DestinationController {
             throws ExecutionException, InterruptedException {
         try {
             Response response = new Response();
-            response.setService(this.getClass().getName());
+            response.setService(DestinationService.getClass().getName());
 
             // Retrieve the destination by ID
             Destination destination = DestinationService.getDestination(id);
@@ -85,7 +85,7 @@ public class DestinationController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(response);
         } else {
-            response.setService(this.getClass().getName());
+            response.setService(DestinationService.getClass().getName());
             response.setMessage("Berhasil Membuat Destinasi");
             response.setData(saveDestination);
         }
@@ -100,7 +100,7 @@ public class DestinationController {
             throws ExecutionException, InterruptedException {
 
         Response response = new Response();
-        response.setService(this.getClass().getName());
+        response.setService(DestinationService.getClass().getName());
         WriteResult wr = DestinationService.updateDestination(id, Destination);
         response.setMessage("Berhasil mengupdate Data");
         response.setData(wr);
@@ -119,7 +119,7 @@ public class DestinationController {
             throws ExecutionException, InterruptedException {
 
         Response response = new Response();
-        response.setService(this.getClass().getName());
+        response.setService(DestinationService.getClass().getName());
         DestinationService.deleteDestination(id);
         response.setMessage("Berhasil menhapus Data");
         response.setData(null);

@@ -150,21 +150,19 @@ public class UserController {
             response.setService(this.getClass().getName());
             response.setMessage("Berhasil Login");
             HS = 200;
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", loginUser.getId());
+            data.put("email", loginUser.getEmail());
+            data.put("role", loginUser.getRole());
+            data.put("_token", loginUser.get_token());
+            data.put("Created At", loginUser.getCreated_at());
+            data.put("Updated At", loginUser.getUpdated_at());
+            response.setData(data);
         } else {
             response.setService(this.getClass().getName());
             response.setMessage("Email atau Password Salah");
-
             HS = 400;
         }
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", loginUser.getId());
-        data.put("email", loginUser.getEmail());
-        data.put("role", loginUser.getRole());
-        data.put("_token", loginUser.get_token());
-        data.put("Created At", loginUser.getCreated_at());
-        data.put("Updated At", loginUser.getUpdated_at());
-        response.setData(data);
-
         return ResponseEntity
                 .status(HS)
                 .contentType(MediaType.APPLICATION_JSON)

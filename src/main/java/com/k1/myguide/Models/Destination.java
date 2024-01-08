@@ -10,5 +10,5 @@ import lombok.Setter;
 public class Destination {
     private String id, name, writer_id, rate, rangeHarga, alamat, pathFoto;
     private Timestamp created_at, updated_at;
-    private double longitude, latitude;
+    private double longitude, latitude,distance;
 }

@@ -15,9 +15,10 @@ import lombok.Setter;
 @Setter
 @Getter
 public class User {
-    private String id, email, name, address, password, role, _token, pathFoto,idGithub,idGoogle;
+    private String id, email, name, address, password, role, _token, pathFoto,idGithub,idGoogle,guideLocation,price;
     private Timestamp created_at, updated_at;
     private boolean justCreated;
+    private Destination dest; 
     // public Map<String, Object> getUpdateMap() {
     // Map<String, Object> updateMap = new HashMap<>();
     // if (this.email != null) {
