@@ -207,7 +207,8 @@ public class UserService {
         }
     }
 
-    public List<User> getAllUsersByRole(String role, int limit, String id_destination) throws ExecutionException, InterruptedException {
+    public List<User> getAllUsersByRole(String role, int limit, String id_destination)
+            throws ExecutionException, InterruptedException {
         try {
             Firestore dbFirestore = FirestoreClient.getFirestore();
             CollectionReference users = dbFirestore.collection("users");
@@ -445,7 +446,16 @@ public class UserService {
 
     @PostConstruct
     public void initialize() {
-
+        try {
+            FileInputStream serviceAccount = new FileInputStream(applicationConfig.getAuthFileLocation());
+            FirebaseOptions options = new FirebaseOptions.Builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .setDatabaseUrl(applicationConfig.getDbBaseUrl())
+                    .build();
+            FirebaseApp myApp = FirebaseApp.initializeApp(options);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

@@ -19,16 +19,16 @@ public class MyGuideApplication {
     private static FirebaseConfig applicationConfig;
 
 	public static void main(String[] args) {
-		try {
-            FileInputStream serviceAccount = new FileInputStream(applicationConfig.getAuthFileLocation());
-            FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl(applicationConfig.getDbBaseUrl())
-                    .build();
-            FirebaseApp myApp = FirebaseApp.initializeApp(options);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+		// try {
+        //     FileInputStream serviceAccount = new FileInputStream(applicationConfig.getAuthFileLocation());
+        //     FirebaseOptions options = new FirebaseOptions.Builder()
+        //             .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+        //             .setDatabaseUrl(applicationConfig.getDbBaseUrl())
+        //             .build();
+        //     FirebaseApp myApp = FirebaseApp.initializeApp(options);
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
 		SpringApplication.run(MyGuideApplication.class, args);
 
 	}
