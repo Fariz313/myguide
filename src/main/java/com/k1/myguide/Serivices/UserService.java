@@ -177,18 +177,49 @@ public class UserService {
         }
     }
 
-    public List<User> getAllUsersByRole(String role) throws ExecutionException, InterruptedException {
+    public List<User> getAllUsersByRole(String role, int limit) throws ExecutionException, InterruptedException {
         try {
             Firestore dbFirestore = FirestoreClient.getFirestore();
             CollectionReference users = dbFirestore.collection("users");
-            Query query = users.whereEqualTo("role", role);
+            Query query = users.whereEqualTo("role", role).limit(limit);
             ApiFuture<QuerySnapshot> querySnapshot = query.get();
 
             List<User> userList = new ArrayList<>();
 
             for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
                 User user = document.toObject(User.class);
-                if(role.equalsIgnoreCase("tourguide")){
+                if (role.equalsIgnoreCase("tourguide")) {
+                    String guideLocationId = document.getString("guideLocation");
+                    CollectionReference destinations = dbFirestore.collection("Destinations");
+                    DocumentReference destinationRef = destinations.document(guideLocationId);
+                    ApiFuture<DocumentSnapshot> destinationSnapshot = destinationRef.get();
+                    DocumentSnapshot destinationDocument = destinationSnapshot.get();
+                    if (destinationDocument.exists()) {
+                        user.setDest(destinationDocument.toObject(Destination.class));
+                    }
+                }
+                userList.add(user);
+            }
+            return userList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public List<User> getAllUsersByRole(String role, int limit, String id_destination) throws ExecutionException, InterruptedException {
+        try {
+            Firestore dbFirestore = FirestoreClient.getFirestore();
+            CollectionReference users = dbFirestore.collection("users");
+            Query query = users.whereEqualTo("role", role);
+            query.whereEqualTo("guideLocation", id_destination).limit(limit);
+            ApiFuture<QuerySnapshot> querySnapshot = query.get();
+
+            List<User> userList = new ArrayList<>();
+
+            for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+                User user = document.toObject(User.class);
+                if (role.equalsIgnoreCase("tourguide")) {
                     String guideLocationId = document.getString("guideLocation");
                     CollectionReference destinations = dbFirestore.collection("Destinations");
                     DocumentReference destinationRef = destinations.document(guideLocationId);

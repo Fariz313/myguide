@@ -53,11 +53,9 @@ public class DestinationService {
             ApiFuture<DocumentSnapshot> future = documentReference.get();
             DocumentSnapshot document = future.get();
             Destination Destination;
-
             if (document.exists()) {
                 Destination = document.toObject(Destination.class);
                 return Destination;
-                // return null;
             } else {
                 return null;
             }
@@ -67,13 +65,12 @@ public class DestinationService {
         }
     }
 
-    public List<Destination> getDestinationAll() throws ExecutionException, InterruptedException {
+    public List<Destination> getDestinationAll(int limit) throws ExecutionException, InterruptedException {
         try {
             List<Destination> destinations = new ArrayList<Destination>();
             Firestore dbFirestore = FirestoreClient.getFirestore();
-            ApiFuture<QuerySnapshot> future = dbFirestore.collection(collection).get();
+            ApiFuture<QuerySnapshot> future = dbFirestore.collection(collection).limit(10).get();
             List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-
             for (QueryDocumentSnapshot document : documents) {
                 destinations.add(document.toObject(Destination.class));
             }
@@ -95,10 +92,7 @@ public class DestinationService {
             Destination.setCreated_at(Timestamp.now());
             DocumentReference documentReference = dbFirestore.collection(collection).document(uuid.toString());
             ApiFuture<WriteResult> writeResultApiFuture = documentReference.set(Destination);
-            // DocumentReference dr = collectionsApiFuture.get();
             return Destination;
-
-            // return null;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -111,10 +105,7 @@ public class DestinationService {
             ApiFuture<WriteResult> deleteFuture = dbFirestore.collection(collection).document(destinationId).delete();
             deleteFuture.get();
         } catch (Exception e) {
-            // Handle the exception appropriately (e.g., log it)
             e.printStackTrace();
-            // Optionally, rethrow the exception or handle it based on your application's
-            // needs
             throw new RuntimeException("Failed to delete destination with ID: " + destinationId, e);
         }
     }
@@ -126,8 +117,8 @@ public class DestinationService {
 
             Map<String, Object> updates = new HashMap<>();
             updates.put("name", Destination.getName());
-            updates.put("longitude", Destination.getLongitude()); // Replace with the new longitude
-            updates.put("latitude", Destination.getLatitude()); // Replace with the new latitude
+            updates.put("longitude", Destination.getLongitude());
+            updates.put("latitude", Destination.getLatitude());
             updates.put("updated_at", Timestamp.now());
             DocumentReference documentReference = dbFirestore.collection(collection).document(id);
 

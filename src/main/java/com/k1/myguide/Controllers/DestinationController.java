@@ -25,12 +25,12 @@ public class DestinationController {
     }
 
     @GetMapping(value = "/", produces = "application/json")
-    public ResponseEntity<Object> getDestination()
+    public ResponseEntity<Object> getDestination(@RequestParam(defaultValue = "1000") String limit)
             throws ExecutionException, InterruptedException {
         Response response = new Response(); 
         response.setService(DestinationService.getClass().getName());
         response.setMessage("Berhasil Mendapat Data");
-        List<Destination> destinations = DestinationService.getDestinationAll();
+        List<Destination> destinations = DestinationService.getDestinationAll(Integer.parseInt(limit));
         response.setData(destinations);
         return ResponseEntity
                 .status(HttpStatus.OK)

@@ -32,13 +32,17 @@ public class UserController {
     }
 
     @GetMapping(value = "/getAllByRole", produces = "application/json")
-    public ResponseEntity<Object> getAllUsersByRole(@RequestParam("role") String role)
+    public ResponseEntity<Object> getAllUsersByRole(@RequestParam("role") String role,
+            @RequestParam(defaultValue = "1000") String limit, @RequestParam(required = false) String id_destination)
             throws ExecutionException, InterruptedException {
         Response response = new Response();
         response.setService(this.getClass().getName());
-
-        List<User> users = userService.getAllUsersByRole(role);
-
+        List<User> users;
+        if (id_destination != null && !id_destination.isEmpty()) {
+            users = userService.getAllUsersByRole(role, Integer.parseInt(limit),id_destination);
+        } else {
+            users = userService.getAllUsersByRole(role, Integer.parseInt(limit));
+        }
         response.setData(users);
 
         return ResponseEntity
