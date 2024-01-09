@@ -88,6 +88,11 @@ public class DestinationService {
             CollectionReference Destinations = dbFirestore.collection("Destinations");
 
             UUID uuid = UUID.randomUUID();
+            Destination.setName(Destination.getName());
+            Destination.setAlamat(Destination.getAlamat());
+            Destination.setPathFoto(Destination.getPathFoto());
+            Destination.setRangeHarga(Destination.getRangeHarga());
+            Destination.setWriter_id(Destination.getWriter_id());
             Destination.setId(uuid.toString());
             Destination.setCreated_at(Timestamp.now());
             DocumentReference documentReference = dbFirestore.collection(collection).document(uuid.toString());
