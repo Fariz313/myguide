@@ -75,16 +75,26 @@ public class UserService {
     public User getUser(String userId) throws ExecutionException, InterruptedException {
         try {
             Firestore dbFirestore = FirestoreClient.getFirestore();
-            DocumentReference documentReference = dbFirestore.collection(applicationConfig.getCollectionName())
+            DocumentReference documentReference = dbFirestore.collection("users")
                     .document(userId);
             ApiFuture<DocumentSnapshot> future = documentReference.get();
             DocumentSnapshot document = future.get();
             User user;
-
+            System.out.println(document.toString());
             if (document.exists()) {
                 user = document.toObject(User.class);
+                System.out.println(user.toQueryString());
+                if (user.getRole().equalsIgnoreCase("tourguide")) {
+                    String guideLocationId = document.getString("guideLocation");
+                    CollectionReference destinations = dbFirestore.collection("Destinations");
+                    DocumentReference destinationRef = destinations.document(guideLocationId);
+                    ApiFuture<DocumentSnapshot> destinationSnapshot = destinationRef.get();
+                    DocumentSnapshot destinationDocument = destinationSnapshot.get();
+                    if (destinationDocument.exists()) {
+                        user.setDest(destinationDocument.toObject(Destination.class));
+                    }
+                }
                 return user;
-                // return null;
             } else {
                 return null;
             }

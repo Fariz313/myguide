@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,16 +26,21 @@ import com.k1.myguide.Utils.Response;
 @RequestMapping(value = "transaction")
 @CrossOrigin("*")
 public class TransactionController {
-    private TransactionService TransactionService;
+    private TransactionService transactionService;
+
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
 
     @GetMapping(value = "/", produces = "application/json")
-    public ResponseEntity<Object> getTransaction(@RequestHeader("Authorization") String authorizationHeader,@RequestParam(defaultValue = "1000") String limit)
+    public ResponseEntity<Object> getTransaction(@RequestHeader("Authorization") String authorizationHeader,
+            @RequestParam(defaultValue = "1000") String limit)
             throws ExecutionException, InterruptedException {
         User loginUser = UserService.me(authorizationHeader);
         Response response = new Response();
-        response.setService(TransactionService.getClass().getName());
+        response.setService(transactionService.getClass().getName());
         response.setMessage("Berhasil Mendapat Data");
-        List<Transaction> destinations = TransactionService.getTransactionAll(loginUser,Integer.parseInt(limit));
+        List<Transaction> destinations = transactionService.getTransactionAll(loginUser, Integer.parseInt(limit));
         response.setData(destinations);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -43,14 +49,15 @@ public class TransactionController {
     }
 
     @PostMapping(value = "/", produces = "application/json")
-    public ResponseEntity<Object> saveTransaction(@RequestHeader("Authorization") String authorizationHeader,@RequestParam(defaultValue = "1000") String limit)
+    public ResponseEntity<Object> saveTransaction(@RequestHeader("Authorization") String authorizationHeader,
+            @RequestParam(defaultValue = "1000") String limit, @RequestBody Transaction trx)
             throws ExecutionException, InterruptedException {
         User loginUser = UserService.me(authorizationHeader);
         Response response = new Response();
-        response.setService(TransactionService.getClass().getName());
+        response.setService(transactionService.getClass().getName());
         response.setMessage("Berhasil Mendapat Data");
-        List<Transaction> destinations = TransactionService.getTransactionAll(loginUser,Integer.parseInt(limit));
-        response.setData(destinations);
+        Transaction transaction = transactionService.saveTransaction(loginUser, trx);
+        response.setData(transaction);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)

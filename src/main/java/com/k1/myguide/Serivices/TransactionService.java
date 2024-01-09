@@ -24,8 +24,8 @@ import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.SetOptions;
-    import com.google.cloud.firestore.WriteResult;
-    import com.google.firebase.FirebaseApp;
+import com.google.cloud.firestore.WriteResult;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import com.k1.myguide.Config.FirebaseConfig;
@@ -90,18 +90,50 @@ public class TransactionService {
         }
     }
 
-    public Transaction saveTransaction(Transaction Transaction) throws ExecutionException, InterruptedException {
+    public Transaction saveTransaction(User user, Transaction trx) throws ExecutionException, InterruptedException {
         try {
 
             Firestore dbFirestore = FirestoreClient.getFirestore();
             CollectionReference Transactions = dbFirestore.collection("Transactions");
 
             UUID uuid = UUID.randomUUID();
-            Transaction.setId(uuid.toString());
-            Transaction.setCreated_at(Timestamp.now());
+            trx.setId(uuid.toString());
+            trx.setCreated_at(Timestamp.now());
+            trx.setUser_id(user.getId());
+            trx.setUser_name(user.getName());
+            System.out.println("DONE 0");
+            trx.calculateTotalPrice();
+            System.out.println("DONE 1");
             DocumentReference documentReference = dbFirestore.collection(collection).document(uuid.toString());
-            ApiFuture<WriteResult> writeResultApiFuture = documentReference.set(Transaction);
-            return Transaction;
+            String guideId = trx.getGuide_id();
+            System.out.println(guideId);
+            CollectionReference guides = dbFirestore.collection("users");
+            DocumentReference guideRef = guides.document(guideId);
+            ApiFuture<DocumentSnapshot> guideSnapshot = guideRef.get();
+            DocumentSnapshot guideDocument = guideSnapshot.get();
+            if (guideDocument.exists()) {
+                System.out.println("DONE 2");
+                User guide = guideDocument.toObject(User.class);                
+                
+                
+                String destinationId = guide.getGuideLocation();
+                CollectionReference destinations = dbFirestore.collection("Destinations");
+                DocumentReference destinationRef = destinations.document(destinationId);
+                ApiFuture<DocumentSnapshot> destinationSnapshot = destinationRef.get();
+                DocumentSnapshot destinationDocument = destinationSnapshot.get();
+                System.out.println("DONE 3");
+                if (destinationDocument.exists()) {
+                    System.out.println("DONE 4");
+                    Destination destination = destinationDocument.toObject(Destination.class);
+                    trx.setDestination_id(destinationId);
+                    trx.setGuide_name(guide.getName());
+                    trx.setDestination_name(destination.getName());
+                    ApiFuture<WriteResult> writeResultApiFuture = documentReference.set(trx);
+                    System.out.println("DONE 5");
+                    return trx;
+                }
+            }
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

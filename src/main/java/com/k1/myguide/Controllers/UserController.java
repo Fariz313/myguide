@@ -39,7 +39,7 @@ public class UserController {
         response.setService(this.getClass().getName());
         List<User> users;
         if (id_destination != null && !id_destination.isEmpty()) {
-            users = userService.getAllUsersByRole(role, Integer.parseInt(limit),id_destination);
+            users = userService.getAllUsersByRole(role, Integer.parseInt(limit), id_destination);
         } else {
             users = userService.getAllUsersByRole(role, Integer.parseInt(limit));
         }
@@ -182,6 +182,30 @@ public class UserController {
         if (loginUser != null) {
             response.setService(this.getClass().getName());
             response.setMessage("Berhasil Login");
+            response.setData(loginUser);
+            HS = 200;
+        } else {
+            response.setService(this.getClass().getName());
+            response.setMessage("Data User Tidak Ditemukan");
+            response.setData(loginUser);
+            HS = 400;
+        }
+
+        return ResponseEntity
+                .status(HS)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
+    }
+
+    @GetMapping(value = "/detail/{id}", produces = "application/json")
+    public ResponseEntity<Object> detail(@PathVariable String id)
+            throws ExecutionException, InterruptedException {
+        User loginUser = userService.getUser(id);
+        int HS = 500;
+        Response response = new Response();
+        if (loginUser != null) {
+            response.setService(this.getClass().getName());
+            response.setMessage("Berhasil Mendapat Data");
             response.setData(loginUser);
             HS = 200;
         } else {
