@@ -110,7 +110,7 @@ public class DestinationController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
-
+    
     @DeleteMapping(value = "/delete/{id}", produces = "application/json")
     public ResponseEntity<Object> deleteDestination(@PathVariable String id)
             throws ExecutionException, InterruptedException {
